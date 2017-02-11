@@ -6,7 +6,7 @@ const mysql = require('mysql2');
 
 const app = express();
 
-let connection = mysql.createConnection({host:'localhost', user: 'root', database: 'TestCustomers'});
+let connection = mysql.createConnection({host:'localhost', user: 'root', password: '8547359p', database: 'TestCustomers'});
 
 app.use(parser.urlencoded({extended: true}));
 app.use(parser.json());
