@@ -6,8 +6,8 @@ const mysql = require('mysql2');
 
 const app = express();
 
-let connection = mysql.createConnection({host:'localhost', user: 'root', password: '8547359p', database: 'TestCustomers'});
-connection.query('SELECT * FROM Customers',function(err,results,fields){console.log(results)});
+let connection = mysql.createConnection({host:'localhost', user: 'root', password: 'yourPasswordHere', database: 'TestCustomers'});
+
 app.use(parser.urlencoded({extended: true}));
 app.use(parser.json());
 
@@ -15,26 +15,37 @@ let port = 8181;
 
 const router = express.Router();
 
-let create = (input) => {
-  console.log('made it');
-    return connection.execute('INSERT INTO Customers VALUES ("",?,?,?,?,?)',[input.username,input.firstName,input.lastName,input.dateSignUp,input.password],(err,results,fields) => {
-        console.log(results);
-        if(err){
-        	return 'failure';
-        }
-        else{return 'success';}
-    });
-}
-
-router.get('/', (req,res)=>{
-    res.json({message:'hello'});
-});
-
 router.post('/create',(req,res)=>{
-    console.log(req.body,Array.from(req.body));
-	res.send(create(req.body));
+    let input = req.body;
+    connection.query('INSERT INTO Customers VALUES ("",?,?,?,?,?)',[input.username,input.firstName,input.lastName,input.dateSignUp,input.password],(err,results) => {
+      if(err){
+        res.send('Database error');
+      }
+      else if(results.affectedRows > 0){
+        res.send('success');
+      }
+      else{
+      	res.send('Wrong username or password');
+      }
+    });
 });
 
-app.use('/api', router);
+router.post('/login',(req,res)=>{
+	connection.query('SELECT * FROM Customers WHERE username = ? AND password = ?',
+                                   [req.body.username, req.body.password],
+                                   (err,results) => { 
+       if(err){
+       	 res.send('Database error');
+       }
+       else if (results.length > 0){
+         res.send(results);
+       }
+       else {
+       		res.send('Wrong username or password');
+       } 
+     });
+});
+
+app.use('/profile', router);
 
 app.listen(port);
